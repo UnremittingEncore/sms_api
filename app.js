@@ -3,15 +3,23 @@ const app = express()
 const mongoose = require('mongoose');
 const config = require('./config/index');
 const routes = require('./config/routes');
+// const { InboundRouter }  = require('./test/inbound');
+// const { OutboundRouter }  = require('./test/outbound');
 require('dotenv').config()
 
-// const message = require('./model/message');
+const http = require("http");
+
+//const message = require('./model/message');
 
 const HOSTNAME = process.env.HOSTNAME || "localhost";
 const PORT = process.env.PORT || 3001;
 
-const { MONGO_CONNECTION_URL } = config;
+app.use(express.json());
+// app.use(InboundRouter);
+// app.use(OutboundRouter);
 
+
+const { MONGO_CONNECTION_URL } = config;
 
 mongoose.connect(MONGO_CONNECTION_URL, {
     useNewUrlParser: true,
@@ -20,14 +28,18 @@ mongoose.connect(MONGO_CONNECTION_URL, {
 .then(() => console.log("Connected to database in cluster"))
 .catch((err) => console.log(err));
 
-//  //#### More data hardcoded into mongoDB collection ####
-// message.create({
-//     "message" : "xxxx",
-//     "error": "xxxx"
-// })
-
 
 routes(app);
+
+app.get('/', (req, res) => {
+    res.send("Refer api's");
+});
+
+app.all('*', async  (req,res)=> {
+    res.status(405).json({
+        "message" : "Method not allowed"  
+    });
+})
 
 app.listen(PORT, HOSTNAME, () => {
     console.log(`Connected to port ${PORT}`);
